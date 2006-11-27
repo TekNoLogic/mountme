@@ -5,7 +5,8 @@
 ## Version: 2.0
 ## X-Category: Inventory
 
-## OptionalDeps: Ace2, FuBar
+## RequiredDeps: Dongle, Ace2, Babble-2.2, CompostLib, CrayonLib, Deformat, DewdropLib, FuBarPlugin-2.0, GratuityLib, PeriodicTable-2.0, SpecialEventsEmbed, TabletLib
+## OptionalDeps: FuBar
 
 ## SavedVariables: MountMeDB
 ## SavedVariablesPerCharacter: MountMeDBPerChar
@@ -42,6 +43,6 @@ Libs\SpecialEvents-Mount-2.0\SpecialEvents-Mount-2.0.lua
 ## LIBS END
 
 Core.lua
-EzDismount.lua
-ItemSwap.lua
-
+#EzDismount.lua
+#ItemSwap.lua
+Fu.lua
