@@ -50,7 +50,6 @@ local spellmounts = {[BS["Summon Felsteed"]] = 60, [BS["Summon Warhorse"]] = 60,
 --~ MountMe:RegisterChatCommand({"/mme", "/mountme"}, MountMe.cmdtable)
 
 MountMe = {}
-
 DongleStub("Dongle"):New(MountMe, "MountMe")
 
 
@@ -205,22 +204,32 @@ f:SetBackdrop({
 
 f:Show()
 
+local function SetManyAttributes(frame, att, value, ...)
+	if not att then return end
+	frame:SetAttribute(att, value)
+	return SetManyAttributes(frame, ...)
+end
+
 f:SetScript("PreClick", function(button, down)
+	local lvl = UnitLevel("player")
 	if InCombatLockdown() then return end
 
 	if IsSwimming() then
-		if GetItemInfo(GetInventoryItemLink("player", 16)) == "Hydrocane" then
-			f:SetAttribute("type1", ATTRIBUTE_NOOP)
-		else
-			f:SetAttribute("type1", ATTRIBUTE_NOOP)
-			f:SetAttribute("type1", "macro")
-			f:SetAttribute("macrotext", "/equip Hydrocane")
-		end
+		if GetItemInfo(GetInventoryItemLink("player", 16)) == "Hydrocane" then f:SetAttribute("type1", ATTRIBUTE_NOOP)
+		else SetManyAttributes(f, "type1", "macro", "macrotext", "/equip Hydrocane") end
 	elseif IsMounted() then
-		f:SetAttribute("type1", ATTRIBUTE_NOOP)
 		MountMe:MountMe_Dismount()
-	elseif MountMe:MountMe_Deshift() then
 		f:SetAttribute("type1", ATTRIBUTE_NOOP)
+	elseif MountMe:MountMe_Deshift() then f:SetAttribute("type1", ATTRIBUTE_NOOP)
+	elseif myclass == "SHAMAN" and lvl < 40 and lvl >= 20 then SetManyAttributes("type1", "spell", "spell", BS["Ghost Wolf"])
+	elseif semove:PlayerMoving() then
+		if myclass == "DRUID" and UnitLevel("player") >= 30 then CastShapeshiftForm(4)
+		elseif myclass == "HUNTER" and UnitLevel("player") then
+			if not GetPlayerBuffName("player", BS["Aspect of the Cheetah"]) and selearn:SpellKnown(BS["Aspect of the Cheetah"]) then
+				SetManyAttributes("type1", "spell", "spell", BS["Aspect of the Cheetah"])
+			elseif selearn:SpellKnown(BS["Aspect of the Pack"]) then SetManyAttributes("type1", "spell", "spell", BS["Aspect of the Pack"])
+			else f:SetAttribute("type1", ATTRIBUTE_NOOP) end
+		else f:SetAttribute("type1", ATTRIBUTE_NOOP) end
 	else
 		-- Use our mount item
 		local rand = GetRandomMount()
