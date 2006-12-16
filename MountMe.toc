@@ -42,6 +42,8 @@ Libs\SpecialEvents-Movement-2.0\SpecialEvents-Movement-2.0.lua
 Libs\SpecialEvents-Mount-2.0\SpecialEvents-Mount-2.0.lua
 ## LIBS END
 
+DongleUtils.lua
+
 Core.lua
 #EzDismount.lua
 #ItemSwap.lua
