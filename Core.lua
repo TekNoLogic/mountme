@@ -38,19 +38,10 @@ local spellmounts = {[BS["Summon Felsteed"]] = 60, [BS["Summon Warhorse"]] = 60,
 
 --~ MountMe = AceLibrary("AceAddon-2.0"):new("AceEvent-2.0", "AceConsole-2.0", "AceDB-2.0")
 --~ MountMe:RegisterDB("MountMeDB", "MountMeDBPerChar")
---~ MountMe.cmdtable = {type = "group", handler = MountMe, args = {
---~ 	[L["now"]] = {
---~ 		type = "execute",
---~ 		name = L["Mount Me Now!"],
---~ 		desc = L["Mounts with the best available mount or travel form"],
---~ 		func = "Now",
---~ 		order = 1,
---~ 	},
---~ }}
+--~ MountMe.cmdtable = {type = "group", handler = MountMe, args = {}}
 --~ MountMe:RegisterChatCommand({"/mme", "/mountme"}, MountMe.cmdtable)
 
-MountMe = {}
-DongleStub("Dongle"):New(MountMe, "MountMe")
+MountMe = Dongle:New("MountMe")
 
 
 ---------------------------
@@ -114,46 +105,6 @@ end
 --      Mount handling      --
 ------------------------------
 
-function MountMe:Now()
-	if UnitAffectingCombat("player") then return end
-	if IsSwimming() then
-		if myclass == "DRUID" and UnitLevel("player") >= 16 then
-			CastShapeshiftForm(2)
-		end
-		return
-	else
-		local bag, slot = self:GetRandomMount()
-		local moving = semove:PlayerMoving()
-		local ininstance = IsInInstance()
-
-		local stspells, clearout = not moving
-
-		if self:MountMe_Deshift() or self:MountMe_Dismount() then return
-		elseif bag and slot and not moving and not breath then
-			UseContainerItem(bag, slot)
-			if not ininstance then clearout = true end
-		elseif bag and not moving and not breath then
-			CastSpellByName(bag)
-		elseif myclass == "SHAMAN" and UnitLevel("player") >= 20 and not moving then
-			CastSpellByName(BS["Ghost Wolf"])
-		end
-
-		if clearout then return end
-
-		if myclass == "HUNTER" and UnitLevel("player") then
-			if not seaura:UnitHasBuff("player", BS["Aspect of the Cheetah"]) and selearn:SpellKnown(BS["Aspect of the Cheetah"]) then
-				CastSpellByName(BS["Aspect of the Cheetah"])
-			elseif selearn:SpellKnown(BS["Aspect of the Pack"]) then CastSpellByName(BS["Aspect of the Pack"]) end
-		elseif myclass == "DRUID" and UnitLevel("player") >= 30 then
-			CastShapeshiftForm(4)
-		end
-	end
-end
-
-
---~ MountMe.OnClick = MountMe.Now
-
-
 local function GetRandomMount()
 	if UnitLevel("player") < 40 then return end
 
@@ -202,7 +153,7 @@ f:SetBackdrop({
 	insets = {left = 4, right = 4, top = 4, bottom = 4},
 })
 
-f:Show()
+f:Hide()
 
 local function SetManyAttributes(frame, att, value, ...)
 	if not att then return end
@@ -215,7 +166,8 @@ f:SetScript("PreClick", function(button, down)
 	if InCombatLockdown() then return end
 
 	if IsSwimming() then
-		if GetItemInfo(GetInventoryItemLink("player", 16)) == "Hydrocane" then f:SetAttribute("type1", ATTRIBUTE_NOOP)
+		if myclass == "DRUID" and UnitLevel("player") >= 16 then CastShapeshiftForm(2)
+		elseif GetItemInfo(GetInventoryItemLink("player", 16)) == "Hydrocane" then f:SetAttribute("type1", ATTRIBUTE_NOOP)
 		else SetManyAttributes(f, "type1", "macro", "macrotext", "/equip Hydrocane") end
 	elseif IsMounted() then
 		MountMe:MountMe_Dismount()
