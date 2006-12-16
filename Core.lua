@@ -19,9 +19,8 @@ L:RegisterTranslations("enUS", function() return {
 --      Are you local?      --
 ------------------------------
 
--- AceLibrary("PeriodicTable-Misc-2.0") -- For InBed
 -- AceLibrary("SpecialEvents-Equipped-2.0") -- For InBed
-local pt = AceLibrary("PeriodicTable-Core-2.0")
+local pt = AceLibrary("PeriodicTable-2.0")
 local selearn = AceLibrary("SpecialEvents-LearnSpell-2.0")
 local semove = AceLibrary("SpecialEvents-Movement-2.0")
 local seaura = AceLibrary("SpecialEvents-Aura-2.0")
@@ -108,31 +107,35 @@ end
 local function GetRandomMount()
 	if UnitLevel("player") < 40 then return end
 
-	local found = {[60] = {}, [100] = {}}
-	local inaq = GetZoneText() == "Ahn'Qiraj"
+	local norms, epics = {}, {}
+	local found = {[60] = norms, [100] = epics}
 
-	if inaq then
-		for bag,slot,val in pt:BagIter("mountsaq") do
+	if GetZoneText() == "Ahn'Qiraj" then
+		for bag,slot,val in pt:BagIter("Mounts - AQ") do
 			local name = GetItemInfo(GetContainerItemLink(bag, slot))
+			MountMe:Debug(1, "Found AQ mount", name)
 			table.insert(found[val], name)
 		end
 	end
 
-	if table.getn(found[100]) == 0 then
-		for bag,slot,val in pt:BagIter("mounts") do
+	if #epics == 0 then
+		for bag,slot,val in pt:BagIter("Mounts") do
 			local name = GetItemInfo(GetContainerItemLink(bag, slot))
+			MountMe:Debug(1, "Found mount", name)
 			table.insert(found[val], name)
 		end
 
 		for name,speed in pairs(spellmounts) do
-			if selearn:SpellKnown(name) then table.insert(found[speed], name) end
+			if selearn:SpellKnown(name) then
+				MountMe:Debug(1, "Found spell", name)
+				table.insert(found[speed], name)
+			end
 		end
 	end
 
-	local norms, epics = table.getn(found[60]), table.getn(found[100])
-
-	if epics > 0 then return found[100][math.random(1, epics)] end
-	if norms > 0 then return found[60][math.random(1, norms)] end
+	MountMe:Debug(1, "Epics found", #epics, "Norms found", #norms)
+	if #epics > 0 then return epics[math.random(#epics)] end
+	if #norms > 0 then return norms[math.random(#norms)] end
 end
 
 
