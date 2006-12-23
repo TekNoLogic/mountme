@@ -185,5 +185,5 @@ function MountMe.PreClick(button, down)
 		frame:SetAttribute("type1", isspell and "spell" or "item")
 		frame:SetAttribute(isspell and "spell" or "item", rand)
 	end
-end)
+end
 
