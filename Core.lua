@@ -179,7 +179,7 @@ function MountMe.PreClick(button, down)
 		else frame:SetAttribute("type1", ATTRIBUTE_NOOP) end
 	else
 		-- Use our mount item
-		local rand = GetRandomMount()
+		local rand = MountMe:GetRandomMount()
 		if not rand then return end
 		local isspell = spellmounts[rand]
 		frame:SetAttribute("type1", isspell and "spell" or "item")
