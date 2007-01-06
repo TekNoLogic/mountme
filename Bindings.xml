@@ -1,5 +1,0 @@
-<Bindings>
-	<Binding name="Mount Up" header="MOUNTME">
-		MountMe:Now()
-	</Binding>
-</Bindings>
