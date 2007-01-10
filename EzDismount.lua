@@ -143,14 +143,14 @@ end
 
 function MountMeEzDismount:UI_ERROR_MESSAGE(msg)
 	if UnitOnTaxi("player") then return
-	elseif mounterrors[msg] and self.db.profile.dismount then return self:TriggerEvent("MountMe_Dismount")
+	elseif mounterrors[msg] and self.db.profile.dismount then return Dismount()
 	elseif shifterrors[msg] and self.db.profile.deshift then return self:TriggerEvent("MountMe_Deshift")
 	elseif standerrors[msg] and self.db.profile.stand then return SitOrStand() end
 end
 
 
 function MountMeEzDismount:TAXIMAP_OPENED()
-	if self.db.profile.taxi then return self:TriggerEvent("MountMe_Dismount") end
+	if self.db.profile.taxi then Dismount() end
 end
 
 
