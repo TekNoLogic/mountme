@@ -39,7 +39,7 @@ local spellmounts = {[BS["Summon Felsteed"]] = 60, [BS["Summon Warhorse"]] = 60,
 --~ MountMe.cmdtable = {type = "group", handler = MountMe, args = {}}
 --~ MountMe:RegisterChatCommand({"/mme", "/mountme"}, MountMe.cmdtable)
 
-MountMe = Dongle:New("MountMe")
+MountMe = DongleStub("Dongle-Beta0"):New("MountMe")
 
 
 ---------------------------
