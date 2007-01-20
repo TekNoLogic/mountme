@@ -49,7 +49,7 @@ MountMe = DongleStub("Dongle-Beta0"):New("MountMe")
 function MountMe:Initialize()
 	frame = CreateFrame("Button", "MountMeFrame", UIParent, "SecureActionButtonTemplate")
 
-	frame.SetManyAttributes = DongleStub("DongleUtils").SetManyAttributes
+	frame.SetManyAttributes = DongleStub("DongleUtils-Beta0").SetManyAttributes
 	frame:EnableMouse(true)
 	frame:SetScript("PreClick", MountMe.PreClick)
 	frame:Hide()
