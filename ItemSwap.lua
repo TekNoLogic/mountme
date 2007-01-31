@@ -3,45 +3,24 @@
 --      Localization      --
 ----------------------------
 
-local L = AceLibrary("AceLocale-2.2"):new("MountMe ItemSwap")
-
-L:RegisterTranslations("enUS", function() return {
-	rein = "Reindeer",
-
-	swap = true,
-	Swap = true,
-	["Options for automatic speed item swapping."] = true,
-
-	temp = true,
-	["Suspend temporarily"] = true,
-	["Suspend item swaps temporarily, this setting does not persist across sessions."] = true,
-
-	pvp = true,
-	["Suspend when PvP"] = true,
-	["Suspend item swaps when the player is PvP flagged."] = true,
-
-	bg = true,
-	["Suspend in BG"] = true,
-	["Suspend item swaps when the player is in a battleground."] = true,
-} end)
+local L = {
+	["Warsong Gulch"] = "Warsong Gulch",
+	["Arathi Basin"] = "Arathi Basin",
+	["Alterac Valley"] = "Alterac Valley",
+}
 
 
 ------------------------------
 --      Are you local?      --
 ------------------------------
 
-local seequip = AceLibrary("SpecialEvents-Equipped-2.0")
-local sebags = AceLibrary("SpecialEvents-Bags-2.0")
-local semount = AceLibrary("SpecialEvents-Mount-2.0")
-local BZ = AceLibrary("Babble-Zone-2.2")
-
-local items, delayed, incombat, raindelay, tempdisable = {}
+local items, delayed, incombat, tempdisable, dbpc = {}
 local itemslots = {carrot = 13, spurs = 8, gloves = 10}
 local itemstrs = {carrot = "item:11122:%d+:%d+:%d+", spurs = "item:%d+:464:%d+:%d+", gloves = "item:%d+:930:%d+:%d+"}
 local battlegrounds = {
-	[BZ["Warsong Gulch"]] = true,
-	[BZ["Arathi Basin"]] = true,
-	[BZ["Alterac Valley"]] = true,
+	[L["Warsong Gulch"]] = true,
+	[L["Arathi Basin"]] = true,
+	[L["Alterac Valley"]] = true,
 }
 
 
@@ -49,54 +28,27 @@ local battlegrounds = {
 --      Namespace Declaration      --
 -------------------------------------
 
-MountMeItemSwap = MountMe:NewModule("ItemSwap", "AceEvent-2.0", "AceDebug-2.0")
-MountMe:RegisterDefaults("ItemSwap", "profile", {
-	BGsuspend = true,
-	PvPsuspend = false,
-})
-MountMeItemSwap.db = MountMe:AcquireDBNamespace("ItemSwap")
-MountMeItemSwap.consoleCmd = L["swap"]
-MountMeItemSwap.consoleOptions = {
-	type = "group",
-	name = L["Swap"],
-	desc = L["Options for automatic speed item swapping."],
-	args = {
-		[L["temp"]] = {
-			type = "toggle",
-			name = L["Suspend temporarily"],
-			desc = L["Suspend item swaps temporarily, this setting does not persist across sessions."],
-			get = function() return tempdisable end,
-			set = function(v) tempdisable = v end,
-		},
-		[L["pvp"]] = {
-			type = "toggle",
-			name = L["Suspend when PvP"],
-			desc = L["Suspend item swaps when the player is PvP flagged."],
-			get = function() return MountMeItemSwap.db.profile.PvPsuspend end,
-			set = function(v) MountMeItemSwap.db.profile.PvPsuspend = v end,
-		},
-		[L["bg"]] = {
-			type = "toggle",
-			name = L["Suspend in BG"],
-			desc = L["Suspend item swaps when the player is in a battleground."],
-			get = function() return MountMeItemSwap.db.profile.BGsuspend end,
-			set = function(v) MountMeItemSwap.db.profile.BGsuspend = v end,
-		},
-	}
-}
+MountMeItemSwap = MountMe:NewModule("MountMe-ItemSwap")
+if UnitName("player") == "Tekkub" then MountMeItemSwap:EnableDebug(1, ChatFrame5) end
+MountMeItemSwap.db = {profile ={BGsuspend = true, PvPsuspend = false}} -- temp fix until Dongle gets DB namespaces
 
 
 ---------------------------
 --      Ace Methods      --
 ---------------------------
 
-function MountMeItemSwap:OnEnable()
+function MountMeItemSwap:Initialize()
+	MountMeItemSwapDB = MountMeItemSwapDB or {}
+	dbpc = MountMeItemSwapDB
+end
+
+
+function MountMeItemSwap:Enable()
 	self:ScanInventory()
 
-	self:RegisterEvent("SpecialEvents_Mounted")
-	self:RegisterEvent("SpecialEvents_Dismounted")
-	self:RegisterEvent("SpecialEvents_BagSlotUpdate")
-	self:RegisterEvent("SpecialEvents_EquipmentChanged")
+	self:RegisterMessage("MountMe_Mounted")
+	self:RegisterMessage("MountMe_Dismounted")
+--~ 	self:RegisterEvent("SpecialEvents_BagSlotUpdate")
 
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 	self:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -107,54 +59,46 @@ end
 --      Event Handlers      --
 ------------------------------
 
-function MountMeItemSwap:SpecialEvents_Mounted(mount)
-	if mount == L.rein then raindelay = true
-	else self:Swap() end
+function MountMeItemSwap:MountMe_Mounted()
+	self:Debug(1, "Mounted")
+	self:Swap()
 end
 
 
-function MountMeItemSwap:SpecialEvents_Dismounted()
+function MountMeItemSwap:MountMe_Dismounted()
+	self:Debug(1, "Dismounted")
 	if incombat then delayed = true
-	else self:Swap(true) end
+	else self:SwapReset() end
 end
 
 
 function MountMeItemSwap:PLAYER_REGEN_DISABLED()
-	if not raindelay then incombat = true end
+	incombat = true
 end
 
 
 function MountMeItemSwap:PLAYER_REGEN_ENABLED()
-	if raindelay then raindelay = nil
-	elseif delayed then self:Swap(true) end
+	if delayed then self:SwapReset() end
 	incombat = nil
 	delayed = nil
 end
 
 
-function MountMeItemSwap:SpecialEvents_EquipmentChanged()
-	if raindelay and not incombat then
-		raindelay = nil
-		self:Swap()
-	end
-end
+--~ function MountMeItemSwap:SpecialEvents_BagSlotUpdate(bag, slot)
+--~ 	local itype = self:CheckItem(bag, slot)
 
-
-function MountMeItemSwap:SpecialEvents_BagSlotUpdate(bag, slot)
-	local itype = self:CheckItem(bag, slot)
-
-	if itype then
-		items[itype] = {bag, slot}
-	else
-		for i in pairs(itemstrs) do
-			local s = items[i]
-			if s and s[1] == bag and s[2] == slot and not self:CheckItem(i, itemslots[i]) then
-				items[i] = nil
-				return
-			end
-		end
-	end
-end
+--~ 	if itype then
+--~ 		items[itype] = {bag, slot}
+--~ 	else
+--~ 		for i in pairs(itemstrs) do
+--~ 			local s = items[i]
+--~ 			if s and s[1] == bag and s[2] == slot and not self:CheckItem(i, itemslots[i]) then
+--~ 				items[i] = nil
+--~ 				return
+--~ 			end
+--~ 		end
+--~ 	end
+--~ end
 
 
 -----------------------------------
@@ -169,28 +113,45 @@ end
 
 
 function MountMeItemSwap:Swap(reset)
-	if self:IsSuspended() then return
-	elseif reset then
-		for i in pairs(itemstrs) do
-			if items[i] and self:CheckItem(i, itemslots[i]) then self:EquipItem(items[i][1], items[i][2]) end
-		end
-	else
-		for i in pairs(itemstrs) do
-			if items[i] and not self:CheckItem(i, itemslots[i]) then
-				self:EquipItem(items[i][1], items[i][2])
-				self.db.char[i] = GetInventoryItemLink("player", itemslots[i])
-				self:EquipItem(items[i][1], items[i][2])
-			end
+	if self:IsSuspended() then return end
+
+	for i in pairs(itemstrs) do
+		if items[i] and not self:CheckItem(i, itemslots[i]) then
+			dbpc[i] = GetInventoryItemLink("player", itemslots[i])
+			self:EquipItem(items[i])
 		end
 	end
 end
 
 
-function MountMeItemSwap:EquipItem(bag, slot)
-	if not GetContainerItemLink(bag, slot) then return end
-	self:Debug("Equipping", GetContainerItemLink(bag, slot))
-	PickupContainerItem(bag, slot)
-	AutoEquipCursorItem()
+function MountMeItemSwap:SwapReset()
+	for i,link in pairs(dbpc) do
+		self:EquipItem(link)
+		dbpc[i] = nil
+	end
+end
+
+
+function MountMeItemSwap:EquipItem(a1, a2)
+	if type(a1) == "string" then
+		for bag=0,4 do
+			for slot=1,GetContainerNumSlots(bag) do
+				local link = GetContainerItemLink(bag, slot)
+				if link and a1 == link then
+					self:Debug(1, "Equipping", link)
+					PickupContainerItem(bag, slot)
+					AutoEquipCursorItem()
+					return true
+				end
+			end
+		end
+	else
+		if not GetContainerItemLink(a1, a2) then return end
+		self:Debug(1, "Equipping", GetContainerItemLink(a1, a2))
+		PickupContainerItem(a1, a2)
+		AutoEquipCursorItem()
+		return true
+	end
 end
 
 
@@ -204,14 +165,14 @@ function MountMeItemSwap:ScanInventory()
 			local link = GetContainerItemLink(bag, slot)
 			if link then
 				for i in pairs(itemstrs) do
-					if self.db.char[i] and link == self.db.char[i] and self:CheckItem(i, itemslots[i]) then
-						items[i] = {bag, slot}
-						if not semount:PlayerMounted() then self:EquipItem(bag, slot) end
+					if dbpc[i] and link == dbpc[i] and self:CheckItem(i, itemslots[i]) then
+						items[i] = link
+						if not IsMounted() then self:EquipItem(bag, slot) end
 					end
 				end
 
 				local itemtype = self:CheckItem(bag, slot)
-				if itemtype then items[itemtype] = {bag, slot} end
+				if itemtype then items[itemtype] = link end
 			end
 		end
 	end
