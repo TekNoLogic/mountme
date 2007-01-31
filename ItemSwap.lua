@@ -15,6 +15,7 @@ local L = {
 ------------------------------
 
 local items, delayed, incombat, tempdisable, dbpc = {}
+local unknowns = {carrot = 13, spurs = 8, gloves = 10}
 local itemslots = {carrot = 13, spurs = 8, gloves = 10}
 local itemstrs = {carrot = "item:11122:%d+:%d+:%d+", spurs = "item:%d+:464:%d+:%d+", gloves = "item:%d+:930:%d+:%d+"}
 local battlegrounds = {
@@ -29,7 +30,6 @@ local battlegrounds = {
 -------------------------------------
 
 MountMeItemSwap = MountMe:NewModule("MountMe-ItemSwap")
-if UnitName("player") == "Tekkub" then MountMeItemSwap:EnableDebug(1, ChatFrame5) end
 MountMeItemSwap.db = {profile ={BGsuspend = true, PvPsuspend = false}} -- temp fix until Dongle gets DB namespaces
 
 
@@ -114,6 +114,7 @@ end
 
 function MountMeItemSwap:Swap(reset)
 	if self:IsSuspended() then return end
+	if next(unknowns) then self:ScanInventory() end
 
 	for i in pairs(itemstrs) do
 		if items[i] and not self:CheckItem(i, itemslots[i]) then
@@ -172,7 +173,10 @@ function MountMeItemSwap:ScanInventory()
 				end
 
 				local itemtype = self:CheckItem(bag, slot)
-				if itemtype then items[itemtype] = link end
+				if itemtype then
+					unknowns[itemtype] = nil
+					items[itemtype] = link
+				end
 			end
 		end
 	end
