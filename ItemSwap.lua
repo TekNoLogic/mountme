@@ -48,7 +48,6 @@ function MountMeItemSwap:Enable()
 
 	self:RegisterMessage("MountMe_Mounted")
 	self:RegisterMessage("MountMe_Dismounted")
---~ 	self:RegisterEvent("SpecialEvents_BagSlotUpdate")
 
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 	self:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -82,23 +81,6 @@ function MountMeItemSwap:PLAYER_REGEN_ENABLED()
 	incombat = nil
 	delayed = nil
 end
-
-
---~ function MountMeItemSwap:SpecialEvents_BagSlotUpdate(bag, slot)
---~ 	local itype = self:CheckItem(bag, slot)
-
---~ 	if itype then
---~ 		items[itype] = {bag, slot}
---~ 	else
---~ 		for i in pairs(itemstrs) do
---~ 			local s = items[i]
---~ 			if s and s[1] == bag and s[2] == slot and not self:CheckItem(i, itemslots[i]) then
---~ 				items[i] = nil
---~ 				return
---~ 			end
---~ 		end
---~ 	end
---~ end
 
 
 -----------------------------------
