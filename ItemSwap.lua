@@ -122,6 +122,7 @@ function MountMeItemSwap:EquipItem(a1, a2)
 				local link = GetContainerItemLink(bag, slot)
 				if link and a1 == link then
 					self:Debug(1, "Equipping", link)
+					if CursorHasItem() or CursorHasMoney() or CursorHasSpell() then ClearCursor() end
 					PickupContainerItem(bag, slot)
 					AutoEquipCursorItem()
 					return true
@@ -131,6 +132,7 @@ function MountMeItemSwap:EquipItem(a1, a2)
 	else
 		if not GetContainerItemLink(a1, a2) then return end
 		self:Debug(1, "Equipping", GetContainerItemLink(a1, a2))
+		if CursorHasItem() or CursorHasMoney() or CursorHasSpell() then ClearCursor() end
 		PickupContainerItem(a1, a2)
 		AutoEquipCursorItem()
 		return true
