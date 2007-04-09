@@ -30,6 +30,15 @@ local _, myclass = UnitClass("player")
 local spellmounts = {[BS["Summon Felsteed"]] = 60, [BS["Summon Warhorse"]] = 60, [BS["Summon Dreadsteed"]] = 100, [BS["Summon Charger"]] = 100}
 
 
+local function SetManyAttributes(self, ...)
+	for i=1,select("#", ...),2 do
+		local att,val = select(i, ...)
+		if not att then return end
+		self:SetAttribute(att,val)
+	end
+end
+
+
 -------------------------------------
 --      Namespace Declaration      --
 -------------------------------------
@@ -49,7 +58,7 @@ MountMe = DongleStub("Dongle-1.0-RC3"):New("MountMe")
 function MountMe:Initialize()
 	frame = CreateFrame("Button", "MountMeFrame", UIParent, "SecureActionButtonTemplate")
 
-	frame.SetManyAttributes = DongleStub("DongleUtils-Beta0").SetManyAttributes
+	frame.SetManyAttributes = SetManyAttributes
 	frame:EnableMouse(true)
 	frame:SetScript("PreClick", MountMe.PreClick)
 	frame:Hide()
