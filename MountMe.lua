@@ -48,7 +48,7 @@ end
 --~ MountMe.cmdtable = {type = "group", handler = MountMe, args = {}}
 --~ MountMe:RegisterChatCommand({"/mme", "/mountme"}, MountMe.cmdtable)
 
-MountMe = DongleStub("Dongle-1.0-RC3"):New("MountMe")
+MountMe = DongleStub("Dongle-1.0"):New("MountMe")
 
 
 ---------------------------
