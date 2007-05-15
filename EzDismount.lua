@@ -3,11 +3,7 @@
 --      Localization      --
 ----------------------------
 
-local L = AceLibrary("AceLocale-2.2"):new("MountMe EZDismount")
-
-L:RegisterTranslations("enUS", function() return {
-	Dazed = true,
-
+local L = {
 	dismount = true,
 	Dismount = true,
 	["Options for Dismounting."] = true,
@@ -31,18 +27,15 @@ L:RegisterTranslations("enUS", function() return {
 	stand = true,
 	["Stand on error"] = true,
 	["Stand on \"You must be standing to do that\" errors."] = true,
-} end)
+}
+for i,v in pairs(L) do if v == true then L[i] = i end end -- Too lazy to copy/paste right now
 
 
 ------------------------------
 --      Are you local?      --
 ------------------------------
 
-local seaura = AceLibrary("SpecialEvents-Aura-2.0")
-local BS = AceLibrary("Babble-Spell-2.2")
-
 local _, myclass = UnitClass("player")
-local aspects = {BS["Aspect of the Cheetah"], BS["Aspect of the Pack"]}
 local standerrors = {
 	[ERR_CANTATTACK_NOTSTANDING] = true,
 	[ERR_LOOT_NOTSTANDING] = true,
@@ -92,14 +85,6 @@ MountMeEzDismount.consoleOptions = {
 			get = function() return MountMeEzDismount.db.profile.taxi end,
 			set = function(v) MountMeEzDismount.db.profile.taxi = v end,
 		},
-		[L["dazed"]] = {
-			type = "toggle",
-			name = L["Clear when Dazed"],
-			desc = L["Removes Aspect of the Cheetah/Pack when Dazed."],
-			get = function() return MountMeEzDismount.db.profile.clearondaze end,
-			set = function(v) MountMeEzDismount.db.profile.clearondaze = v end,
-			hidden = myclass ~= "HUNTER",
-		},
 		[L["deshift"]] = {
 			type = "toggle",
 			name = L["Deshift on error"],
@@ -131,7 +116,6 @@ MountMeEzDismount.consoleOptions = {
 ---------------------------
 
 function MountMeEzDismount:OnEnable()
-	self:RegisterEvent("SpecialEvents_PlayerDebuffGained")
 	self:RegisterEvent("TAXIMAP_OPENED")
 	self:RegisterEvent("UI_ERROR_MESSAGE")
 end
@@ -153,19 +137,6 @@ function MountMeEzDismount:TAXIMAP_OPENED()
 	if self.db.profile.taxi then Dismount() end
 end
 
-
-function MountMeEzDismount:SpecialEvents_PlayerDebuffGained(debuff)
-	if debuff == L.Dazed and self.db.profile.clearondaze then
-		for _,f in pairs(aspects) do
-			local i = seaura:UnitHasBuff("player", f)
-			if i then
-				i = GetPlayerBuff(i, "HELPFUL")
- 				self:Debug("Cancelling ".. f.. " in buff#".. i)
-				return CancelPlayerBuff(i)
-			end
-		end
-	end
-end
 
 
 
