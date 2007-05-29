@@ -17,9 +17,9 @@ local L = {
 local _, myclass = UnitClass("player")
 local forms = myclass == "SHAMAN" and {"Ghost Wolf"} or myclass == "DRUID" and {"Cat Form", "Bear Form", "Travel Form", "Dire Bear Form"}
 local items, delayed, incombat, tempdisable, dbpc, mounted = {}
-local unknowns = {carrot = 13, spurs = 8, gloves = 10}
-local itemslots = {carrot = 13, spurs = 8, gloves = 10}
-local itemstrs = {carrot = "item:11122:%d+:%d+:%d+", spurs = "item:%d+:464:%d+:%d+", gloves = "item:%d+:930:%d+:%d+"}
+local unknowns = {carrot = 13, crop = 13, whip = 13, spurs = 8, gloves = 10}
+local itemslots = {carrot = 13, crop = 13, whip = 13, spurs = 8, gloves = 10}
+local itemstrs = {carrot = "item:11122:%d+:%d+:%d+", crop = "item:25653:%d+:%d+:%d+", whip = "item:32863:%d+:%d+:%d+", spurs = "item:%d+:464:%d+:%d+", gloves = "item:%d+:930:%d+:%d+"}
 local battlegrounds = {
 	[L["Warsong Gulch"]] = true,
 	[L["Arathi Basin"]] = true,
