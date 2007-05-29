@@ -8,38 +8,10 @@
 ## X-Email: tekkub-wow@googlegroups.com
 ## X-Category: Inventory
 
-## RequiredDeps: PeriodicTable-2.0, SpecialEventsEmbed
 ## OptionalDeps: Dongle
 
 ## SavedVariables: MountMeDB
 ## SavedVariablesPerCharacter: MountMeDBPerChar, MountMeItemSwapDB
-
-## LIBS START
-## X-Embeds: Ace2, Babble-2.2, CompostLib, CrayonLib, Deformat, DewdropLib, FuBarPlugin-2.0, GratuityLib, PeriodicTable-2.0, SpecialEventsEmbed, TabletLib
-Libs\AceLibrary\AceLibrary.lua
-Libs\AceOO-2.0\AceOO-2.0.lua
-Libs\AceConsole-2.0\AceConsole-2.0.lua
-Libs\AceEvent-2.0\AceEvent-2.0.lua
-Libs\AceAddon-2.0\AceAddon-2.0.lua
-Libs\AceDB-2.0\AceDB-2.0.lua
-Libs\AceDebug-2.0\AceDebug-2.0.lua
-Libs\AceLocale-2.2\AceLocale-2.2.lua
-Libs\Compost-2.0\Compost-2.0.lua
-Libs\AceModuleCore-2.0\AceModuleCore-2.0.lua
-Libs\Babble-Spell-2.2\Babble-Spell-2.2.lua
-Libs\Crayon-2.0\Crayon-2.0.lua
-Libs\Deformat-2.0\Deformat-2.0.lua
-Libs\Gratuity-2.0\Gratuity-2.0.lua
-Libs\PeriodicTable-Core-2.0\PeriodicTable-Core-2.0.lua
-Libs\PeriodicTable-Misc-2.0\PeriodicTable-Misc-2.0.lua
-Libs\SpecialEvents-Aura-2.0\SpecialEvents-Aura-2.0.lua
-Libs\SpecialEvents-Bags-2.0\SpecialEvents-Bags-2.0.lua
-Libs\SpecialEvents-Breath-2.0\SpecialEvents-Breath-2.0.lua
-Libs\SpecialEvents-Equipped-2.0\SpecialEvents-Equipped-2.0.lua
-Libs\SpecialEvents-LearnSpell-2.0\SpecialEvents-LearnSpell-2.0.lua
-Libs\SpecialEvents-Movement-2.0\SpecialEvents-Movement-2.0.lua
-Libs\SpecialEvents-Mount-2.0\SpecialEvents-Mount-2.0.lua
-## LIBS END
 
 Dongle.lua
 
