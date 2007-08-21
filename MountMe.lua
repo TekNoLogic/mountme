@@ -32,6 +32,7 @@ local battlegrounds = {
 -------------------------------------
 
 MountMe = DongleStub("Dongle-1.0"):New("MountMe", CreateFrame("Frame"))
+if tekDebug then MountMe:EnableDebug(1, tekDebug:GetFrame("MountMe")) end
 MountMe.db = {profile ={BGsuspend = true, PvPsuspend = false}} -- temp fix until Dongle gets DB namespaces
 
 
@@ -109,7 +110,7 @@ end
 
 
 function MountMe:Swap(reset)
-	if self:IsSuspended() then return end
+	if self:IsSuspended() or not HasFullControl() then return end
 	if next(unknowns) then self:ScanInventory() end
 
 	for i in pairs(itemstrs) do

@@ -8,7 +8,7 @@
 ## X-Email: tekkub-wow@googlegroups.com
 ## X-Category: Inventory
 
-## OptionalDeps: Dongle
+## OptionalDeps: Dongle, tekDebug
 
 ## SavedVariables: MountMeDB
 ## SavedVariablesPerCharacter: MountMeDBPerChar, MountMeItemSwapDB
