@@ -13,6 +13,9 @@
 ## SavedVariables: MountMeDB
 ## SavedVariablesPerCharacter: MountMeDBPerChar, MountMeItemSwapDB
 
+## LoadManagers: AddonLoader
+## X-LoadOn-Level: 40+
+
 Dongle.lua
 
 MountMe.lua
