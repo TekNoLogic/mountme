@@ -1,4 +1,5 @@
-﻿----------------------------
+﻿
+----------------------------
 --      Localization      --
 ----------------------------
 
@@ -16,9 +17,9 @@ local _, myclass = UnitClass("player")
 local items, equipCheck, delayed, incombat, dbpc, mounted, isflight = {}, {}
 local forms = myclass == "SHAMAN" and {"Ghost Wolf"} or myclass == "DRUID" and {"Cat Form", "Bear Form", "Travel Form", "Dire Bear Form", "Flight Form", "Swift Flight Form"}
 local itemstrs = {carrot = "item:11122:%d+:%d+:%d+", crop = "item:25653:%d+:%d+:%d+", charm = "item:32481:%d+:%d+:%d+", whip = "item:32863:%d+:%d+:%d+", spurs = "item:%d+:464:%d+:%d+", gloves = "item:%d+:930:%d+:%d+"}
-
 local itemslots = {carrot = 13, crop = 13, whip = 13, charm = 13, spurs = 8, gloves = 10}
 local unknowns = {carrot = 13, crop = 13, whip = 13, charm = 13, spurs = 8, gloves = 10}
+
 
 -------------------------------------
 --      Namespace Declaration      --
@@ -26,7 +27,8 @@ local unknowns = {carrot = 13, crop = 13, whip = 13, charm = 13, spurs = 8, glov
 
 MountMe = DongleStub("Dongle-1.0"):New("MountMe", CreateFrame("Frame"))
 if tekDebug then MountMe:EnableDebug(1, tekDebug:GetFrame("MountMe")) end
-MountMe.db = {profile ={BGsuspend = true, PvPsuspend = false}} -- temp fix until Dongle gets DB namespaces
+MountMe.db = {profile ={BGsuspend = true, PvPsuspend = false}}  -- TODO: Make this a real DB, and give settings
+
 
 ------------------------------
 --      Dongle Methods      --
@@ -37,15 +39,15 @@ function MountMe:Initialize()
 	dbpc = MountMeItemSwapDB
 end
 
-function MountMe:Enable()
-	if forms then self:RegisterEvent("TAXIMAP_OPENED") end
 
+function MountMe:Enable()
 	self:ScanInventory()
 
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 	self:RegisterEvent("PLAYER_REGEN_ENABLED")
 	self:RegisterEvent("PLAYER_AURAS_CHANGED")
 	self:RegisterEvent("UNIT_INVENTORY_CHANGED")
+	if forms then self:RegisterEvent("TAXIMAP_OPENED") end
 end
 
 
@@ -62,11 +64,8 @@ MountMe:SetScript("OnUpdate", function(self)
 		self:Swap()
 	else
 		self:Debug(1, "Dismounted")
-		if incombat then
-			delayed = true
-		else
-			self:SwapReset()
-		end
+		if incombat then delayed = true
+		else self:SwapReset() end
 	end
 
 	mounted = m
@@ -88,60 +87,39 @@ end
 
 
 function MountMe:PLAYER_REGEN_ENABLED()
-	if delayed then
-		self:SwapReset()
-	else
-		for i, link in pairs(equipCheck) do
-			EquipItemByName(link)
-		end
-	end
-	
-	incombat = nil
-	delayed = nil
+	if delayed then self:SwapReset()
+	else for i, link in pairs(equipCheck) do EquipItemByName(link) end end
+	incombat, delayed = nil, nil
 end
+
 
 function MountMe:PLAYER_AURAS_CHANGED()
 	isflight = nil
-	
+
 	for i=1, GetNumShapeshiftForms() do
 		local _, name, active = GetShapeshiftFormInfo(i)
-		if active and (name == L["Flight Form"] or name == L["Swift Flight Form"])  then
-			isflight = true
-		end
+		if active and (name == L["Flight Form"] or name == L["Swift Flight Form"]) then isflight = true end
 	end
 end
+
 
 function MountMe:UNIT_INVENTORY_CHANGED()
-	for type, link in pairs(equipCheck) do
-
-		local currentEquip = GetInventoryItemLink("player", itemslots[type])
-		if link == currentEquip then
-			equipCheck[type] = nil
-		end
+	for itemtype,link in pairs(equipCheck) do
+		if link == GetInventoryItemLink("player", itemslots[itemtype]) then equipCheck[itemtype] = nil end
 	end
 end
+
 
 -----------------------------------
 --      Speed item swapping      --
 -----------------------------------
 
 function MountMe:IsSuspended()
-	if self.db.profile.PvPsuspend and UnitIsPVP("player") then
-		return true
-	end
-	
+	-- While you can switch trinkets while inside an arena, you cannot once the match starts so we're disabled when inside arenas no matter what
 	local _, instanceType = IsInInstance()
-	if self.db.profile.BGsuspend and instanceType == "pvp" then
-		return true
-	end
-	
-	-- While you can switch trinkets while inside an arena, you cannot
-	-- once the match starts so we're disabled when inside arenas no matter what
-	if instanceType == "arena" then
-		return true
-	end
-
-	return nil
+	if self.db.profile.PvPsuspend and UnitIsPVP("player")
+		or self.db.profile.BGsuspend and instanceType == "pvp"
+		or instanceType == "arena" then return true end
 end
 
 
@@ -152,16 +130,13 @@ function MountMe:Swap(reset)
 	for i, matchstr in pairs(itemstrs) do
 		local link = GetInventoryItemLink("player", itemslots[i])
 		if items[i] and not string.match(link, matchstr) and ((i ~= "charm" and not isflight) or (i == "charm" and isflight)) then
-			-- Makes sure we don't change our originally equipped item if it's our charm
-			-- mainly this is for Flight Form since spamming it can mess up our original item
-			if link ~= items[i] and equipCheck[i] ~= link then
-				dbpc[i] = link
-			end
-
+			-- Makes sure we don't change our originally equipped item if it's our charm mainly this is for Flight Form since spamming it can mess up our original item
+			if link ~= items[i] and equipCheck[i] ~= link then dbpc[i] = link end
 			EquipItemByName(items[i])
 		end
 	end
 end
+
 
 -- Reset our gear to the unmounted version
 function MountMe:SwapReset()
@@ -171,6 +146,7 @@ function MountMe:SwapReset()
 		EquipItemByName(link)
 	end
 end
+
 
 ----------------------------------
 --      Speed item tracking     --
