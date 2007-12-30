@@ -19,6 +19,3 @@
 Dongle.lua
 
 MountMe.lua
-MountEvent.lua
-#EzDismount.lua
-ItemSwap.lua

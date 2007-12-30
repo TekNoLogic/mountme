@@ -1,12 +1,10 @@
-﻿
-----------------------------
+﻿----------------------------
 --      Localization      --
 ----------------------------
 
 local L = {
-	["Warsong Gulch"] = "Warsong Gulch",
-	["Arathi Basin"] = "Arathi Basin",
-	["Alterac Valley"] = "Alterac Valley",
+	["Flight Form"] = "Flight Form",
+	["Swift Flight Form"] = "Swift Flight Form",
 }
 
 
@@ -15,17 +13,12 @@ local L = {
 ------------------------------
 
 local _, myclass = UnitClass("player")
-local forms = myclass == "SHAMAN" and {"Ghost Wolf"} or myclass == "DRUID" and {"Cat Form", "Bear Form", "Travel Form", "Dire Bear Form"}
-local items, delayed, incombat, tempdisable, dbpc, mounted = {}
-local unknowns = {carrot = 13, crop = 13, whip = 13, spurs = 8, gloves = 10}
-local itemslots = {carrot = 13, crop = 13, whip = 13, spurs = 8, gloves = 10}
-local itemstrs = {carrot = "item:11122:%d+:%d+:%d+", crop = "item:25653:%d+:%d+:%d+", whip = "item:32863:%d+:%d+:%d+", spurs = "item:%d+:464:%d+:%d+", gloves = "item:%d+:930:%d+:%d+"}
-local battlegrounds = {
-	[L["Warsong Gulch"]] = true,
-	[L["Arathi Basin"]] = true,
-	[L["Alterac Valley"]] = true,
-}
+local items, equipCheck, delayed, incombat, dbpc, mounted, isflight = {}, {}
+local forms = myclass == "SHAMAN" and {"Ghost Wolf"} or myclass == "DRUID" and {"Cat Form", "Bear Form", "Travel Form", "Dire Bear Form", "Flight Form", "Swift Flight Form"}
+local itemstrs = {carrot = "item:11122:%d+:%d+:%d+", crop = "item:25653:%d+:%d+:%d+", charm = "item:32481:%d+:%d+:%d+", whip = "item:32863:%d+:%d+:%d+", spurs = "item:%d+:464:%d+:%d+", gloves = "item:%d+:930:%d+:%d+"}
 
+local itemslots = {carrot = 13, crop = 13, whip = 13, charm = 13, spurs = 8, gloves = 10}
+local unknowns = {carrot = 13, crop = 13, whip = 13, charm = 13, spurs = 8, gloves = 10}
 
 -------------------------------------
 --      Namespace Declaration      --
@@ -34,7 +27,6 @@ local battlegrounds = {
 MountMe = DongleStub("Dongle-1.0"):New("MountMe", CreateFrame("Frame"))
 if tekDebug then MountMe:EnableDebug(1, tekDebug:GetFrame("MountMe")) end
 MountMe.db = {profile ={BGsuspend = true, PvPsuspend = false}} -- temp fix until Dongle gets DB namespaces
-
 
 ------------------------------
 --      Dongle Methods      --
@@ -45,7 +37,6 @@ function MountMe:Initialize()
 	dbpc = MountMeItemSwapDB
 end
 
-
 function MountMe:Enable()
 	if forms then self:RegisterEvent("TAXIMAP_OPENED") end
 
@@ -53,6 +44,8 @@ function MountMe:Enable()
 
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 	self:RegisterEvent("PLAYER_REGEN_ENABLED")
+	self:RegisterEvent("PLAYER_AURAS_CHANGED")
+	self:RegisterEvent("UNIT_INVENTORY_CHANGED")
 end
 
 
@@ -61,7 +54,7 @@ end
 -------------------------------
 
 MountMe:SetScript("OnUpdate", function(self)
-	local m = IsMounted()
+	local m = IsMounted() or isflight
 	if m == mounted then return end
 
 	if m then
@@ -69,8 +62,11 @@ MountMe:SetScript("OnUpdate", function(self)
 		self:Swap()
 	else
 		self:Debug(1, "Dismounted")
-		if incombat then delayed = true
-		else self:SwapReset() end
+		if incombat then
+			delayed = true
+		else
+			self:SwapReset()
+		end
 	end
 
 	mounted = m
@@ -92,20 +88,60 @@ end
 
 
 function MountMe:PLAYER_REGEN_ENABLED()
-	if delayed then self:SwapReset() end
+	if delayed then
+		self:SwapReset()
+	else
+		for i, link in pairs(equipCheck) do
+			EquipItemByName(link)
+		end
+	end
+	
 	incombat = nil
 	delayed = nil
 end
 
+function MountMe:PLAYER_AURAS_CHANGED()
+	isflight = nil
+	
+	for i=1, GetNumShapeshiftForms() do
+		local _, name, active = GetShapeshiftFormInfo(i)
+		if active and (name == L["Flight Form"] or name == L["Swift Flight Form"])  then
+			isflight = true
+		end
+	end
+end
+
+function MountMe:UNIT_INVENTORY_CHANGED()
+	for type, link in pairs(equipCheck) do
+
+		local currentEquip = GetInventoryItemLink("player", itemslots[type])
+		if link == currentEquip then
+			equipCheck[type] = nil
+		end
+	end
+end
 
 -----------------------------------
 --      Speed item swapping      --
 -----------------------------------
 
 function MountMe:IsSuspended()
-	return tempdisable
-		or self.db.profile.PvPsuspend and UnitIsPVP("player")
-		or self.db.profile.BGsuspend and battlegrounds[GetZoneText()]
+	if self.db.profile.PvPsuspend and UnitIsPVP("player") then
+		return true
+	end
+	
+	local _, instanceType = IsInInstance()
+	if self.db.profile.BGsuspend and instanceType == "pvp" then
+		return true
+	end
+	
+	-- While you can switch trinkets while inside an arena, you cannot
+	-- once the match starts so we're disabled when inside arenas no matter what
+	if instanceType == "arena" then
+		return true
+	end
+
+	return nil
 end
 
 
@@ -113,50 +149,31 @@ function MountMe:Swap(reset)
 	if self:IsSuspended() or not HasFullControl() then return end
 	if next(unknowns) then self:ScanInventory() end
 
-	for i in pairs(itemstrs) do
-		if items[i] and not self:CheckItem(i, itemslots[i]) then
-			dbpc[i] = GetInventoryItemLink("player", itemslots[i])
-			self:EquipItem(items[i])
-		end
-	end
-end
-
-
-function MountMe:SwapReset()
-	for i,link in pairs(dbpc) do
-		self:EquipItem(link)
-		dbpc[i] = nil
-	end
-end
-
-
-function MountMe:EquipItem(a1, a2)
-	if type(a1) == "string" then
-		for bag=0,4 do
-			for slot=1,GetContainerNumSlots(bag) do
-				local link = GetContainerItemLink(bag, slot)
-				if link and a1 == link then
-					self:Debug(1, "Equipping", link)
-					if CursorHasItem() or CursorHasMoney() or CursorHasSpell() then ClearCursor() end
-					PickupContainerItem(bag, slot)
-					AutoEquipCursorItem()
-					return true
-				end
+	for i, matchstr in pairs(itemstrs) do
+		local link = GetInventoryItemLink("player", itemslots[i])
+		if items[i] and not string.match(link, matchstr) and ((i ~= "charm" and not isflight) or (i == "charm" and isflight)) then
+			-- Makes sure we don't change our originally equipped item if it's our charm
+			-- mainly this is for Flight Form since spamming it can mess up our original item
+			if link ~= items[i] and equipCheck[i] ~= link then
+				dbpc[i] = link
 			end
+
+			EquipItemByName(items[i])
 		end
-	else
-		if not GetContainerItemLink(a1, a2) then return end
-		self:Debug(1, "Equipping", GetContainerItemLink(a1, a2))
-		if CursorHasItem() or CursorHasMoney() or CursorHasSpell() then ClearCursor() end
-		PickupContainerItem(a1, a2)
-		AutoEquipCursorItem()
-		return true
 	end
 end
 
+-- Reset our gear to the unmounted version
+function MountMe:SwapReset()
+	for i, link in pairs(dbpc) do
+		dbpc[i] = nil
+		equipCheck[i] = link
+		EquipItemByName(link)
+	end
+end
 
 ----------------------------------
---			Speed item tracking			--
+--      Speed item tracking     --
 ----------------------------------
 
 function MountMe:ScanInventory()
@@ -164,36 +181,15 @@ function MountMe:ScanInventory()
 		for slot=1,GetContainerNumSlots(bag) do
 			local link = GetContainerItemLink(bag, slot)
 			if link then
-				for i in pairs(itemstrs) do
-					if dbpc[i] and link == dbpc[i] and self:CheckItem(i, itemslots[i]) then
+				-- Check if we need to add it to our list of mounted items
+				for i, matchstr in pairs(itemstrs) do
+					if string.match(link, matchstr) then
+						unknowns[i] = nil
 						items[i] = link
-						if not IsMounted() then self:EquipItem(bag, slot) end
+						break
 					end
-				end
-
-				local itemtype = self:CheckItem(bag, slot)
-				if itemtype then
-					unknowns[itemtype] = nil
-					items[itemtype] = link
 				end
 			end
 		end
 	end
 end
-
-
-function MountMe:CheckItem(bag, slot)
-	assert(bag and slot, "You must pass two args!")
-
-	if type(bag) == "string" then
-		assert(itemstrs[bag], "Invalid item type: "..bag)
-		local link = GetInventoryItemLink("player", slot)
-		if link and string.find(link, itemstrs[bag]) then return true end
-	else
-		for item,str in pairs(itemstrs) do
-			local link = GetContainerItemLink(bag, slot)
-			if link and string.find(link, str) then return item end
-		end
-	end
-end
-
