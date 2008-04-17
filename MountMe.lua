@@ -27,7 +27,6 @@ local unknowns = {carrot = 13, crop = 13, whip = 13, charm = 13, spurs = 8, glov
 
 MountMe = DongleStub("Dongle-1.0"):New("MountMe", CreateFrame("Frame"))
 if tekDebug then MountMe:EnableDebug(1, tekDebug:GetFrame("MountMe")) end
-MountMe.db = {profile ={BGsuspend = true, PvPsuspend = false}}  -- TODO: Make this a real DB, and give settings
 
 
 ------------------------------
@@ -35,6 +34,9 @@ MountMe.db = {profile ={BGsuspend = true, PvPsuspend = false}}  -- TODO: Make th
 ------------------------------
 
 function MountMe:Initialize()
+	MountMeDB = MountMeDB or {BGsuspend = true, PvPsuspend = false}
+	self.db = MountMeDB
+
 	MountMeItemSwapDB = MountMeItemSwapDB or {}
 	dbpc = MountMeItemSwapDB
 end
