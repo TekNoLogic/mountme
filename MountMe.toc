@@ -4,7 +4,7 @@
 ## Notes: Handles all your mount & travel-form needs
 ## Author: Tekkub Stoutwrithe
 ## Version: Alpha
-## X-Website: http://code.google.com/p/tekkub-wow/
+## X-Website: http://www.tekkub.net/
 ## X-Email: tekkub-wow@googlegroups.com
 ## X-Category: Inventory
 
@@ -17,5 +17,7 @@
 ## X-LoadOn-Level: 40+
 
 Dongle.lua
+tekKonfig\tekKonfig.xml
 
 MountMe.lua
+Config.lua
