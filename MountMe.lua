@@ -119,8 +119,8 @@ end
 function MountMe:IsSuspended()
 	-- While you can switch trinkets while inside an arena, you cannot once the match starts so we're disabled when inside arenas no matter what
 	local _, instanceType = IsInInstance()
-	if self.db.profile.PvPsuspend and UnitIsPVP("player")
-		or self.db.profile.BGsuspend and instanceType == "pvp"
+	if self.db.PvPsuspend and UnitIsPVP("player")
+		or self.db.BGsuspend and instanceType == "pvp"
 		or instanceType == "arena" then return true end
 end
 
