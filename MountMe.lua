@@ -47,7 +47,7 @@ function MountMe:Enable()
 
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 	self:RegisterEvent("PLAYER_REGEN_ENABLED")
-	self:RegisterEvent("PLAYER_AURAS_CHANGED")
+	if myclass == "DRUID" then self:RegisterEvent("PLAYER_AURAS_CHANGED") end
 	self:RegisterEvent("UNIT_INVENTORY_CHANGED")
 	if forms then self:RegisterEvent("TAXIMAP_OPENED") end
 end
@@ -96,12 +96,7 @@ end
 
 
 function MountMe:PLAYER_AURAS_CHANGED()
-	isflight = nil
-
-	for i=1, GetNumShapeshiftForms() do
-		local _, name, active = GetShapeshiftFormInfo(i)
-		if active and (name == L["Flight Form"] or name == L["Swift Flight Form"]) then isflight = true end
-	end
+	isflight = GetPlayerBuffTexture(L["Flight Form"]) or GetPlayerBuffTexture(L["Swift Flight Form"])
 end
 
 
