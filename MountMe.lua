@@ -34,7 +34,7 @@ if tekDebug then MountMe:EnableDebug(1, tekDebug:GetFrame("MountMe")) end
 ------------------------------
 
 function MountMe:Initialize()
-	MountMeDB = MountMeDB or {BGsuspend = true, PvPsuspend = false}
+	MountMeDB = MountMeDB or {BGsuspend = true, PvPsuspend = false, raidsuspend = false}
 	self.db = MountMeDB
 
 	MountMeItemSwapDB = MountMeItemSwapDB or {}
@@ -114,9 +114,10 @@ end
 function MountMe:IsSuspended()
 	-- While you can switch trinkets while inside an arena, you cannot once the match starts so we're disabled when inside arenas no matter what
 	local _, instanceType = IsInInstance()
-	if self.db.PvPsuspend and UnitIsPVP("player")
+	return self.db.PvPsuspend and UnitIsPVP("player")
 		or self.db.BGsuspend and instanceType == "pvp"
-		or instanceType == "arena" then return true end
+		or self.db.raidsuspend and instanceType == "raid"
+		or instanceType == "arena"
 end
 
 
