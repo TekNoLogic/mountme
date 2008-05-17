@@ -127,7 +127,7 @@ function MountMe:Swap(reset)
 
 	for i, matchstr in pairs(itemstrs) do
 		local link = GetInventoryItemLink("player", itemslots[i])
-		if items[i] and not string.match(link, matchstr) and ((i ~= "charm" and not isflight) or (i == "charm" and isflight)) then
+		if items[i] and (not link or not string.match(link, matchstr)) and ((i ~= "charm" and not isflight) or (i == "charm" and isflight)) then
 			-- Makes sure we don't change our originally equipped item if it's our charm mainly this is for Flight Form since spamming it can mess up our original item
 			if link ~= items[i] and equipCheck[i] ~= link then dbpc[i] = link end
 			EquipItemByName(items[i])
