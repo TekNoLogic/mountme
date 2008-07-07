@@ -56,4 +56,12 @@ InterfaceOptions_AddCategory(frame)
 LibStub("tekKonfig-AboutPanel").new("MountMe", "MountMe")
 
 
+----------------------------------------
+--      Quicklaunch registration      --
+----------------------------------------
 
+LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject("MountMe", {
+	launcher = true,
+	icon = "Interface\\Icons\\Ability_Mount_WhiteTiger",
+	OnClick = function() InterfaceOptionsFrame_OpenToFrame(frame) end,
+})
