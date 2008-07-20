@@ -61,7 +61,7 @@ LibStub("tekKonfig-AboutPanel").new("MountMe", "MountMe")
 ----------------------------------------
 
 LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject("MountMe", {
-	launcher = true,
+	type = "launcher",
 	icon = "Interface\\Icons\\Ability_Mount_WhiteTiger",
 	OnClick = function() InterfaceOptionsFrame_OpenToFrame(frame) end,
 })
