@@ -1,4 +1,6 @@
-﻿
+﻿if IS_WRATH_BUILD == nil then IS_WRATH_BUILD = (select(4, GetBuildInfo()) >= 30000) end
+if not IS_WRATH_BUILD then InterfaceOptionsFrame_OpenToCategory = InterfaceOptionsFrame_OpenToFrame end
+
 local MountMe = MountMe
 if not MountMe then return end
 
@@ -7,7 +9,7 @@ local GAP = 8
 local tekcheck = LibStub("tekKonfig-Checkbox")
 
 
-local frame = CreateFrame("Frame", nil, UIParent)
+local frame = CreateFrame("Frame", nil, InterfaceOptionsFramePanelContainer)
 frame.name = "MountMe"
 frame:Hide()
 frame:SetScript("OnShow", function()
@@ -63,5 +65,5 @@ LibStub("tekKonfig-AboutPanel").new("MountMe", "MountMe")
 LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject("MountMe", {
 	type = "launcher",
 	icon = "Interface\\Icons\\Ability_Mount_WhiteTiger",
-	OnClick = function() InterfaceOptionsFrame_OpenToFrame(frame) end,
+	OnClick = function() InterfaceOptionsFrame_OpenToCategory(frame) end,
 })
